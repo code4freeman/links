@@ -664,7 +664,3 @@ export default async function formDataParser (request, { dir }) {
 
 本篇到此就描述了tcp如何解析http头部，然后交由http层处理路由和后续的文件接收处理。    
 然而还有许多需要处理的东西/细节都没有去考虑/实现，如文件大小限制（本篇此项只差一点就OK但是懒得弄了）、如何优雅地处理错误... 等等。         
-
-虽说很简单，但是貌似很容易忘，之前入职某公司据说是学通信出生的大佬就差点改变了我对form-data的认知。           
-
-![./imgs/wechat-capture1.jpg](./imgs/wechat-capture1.jpg)      
