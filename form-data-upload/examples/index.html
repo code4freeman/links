@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @keyframes warning-bg {
+            0% {
+                background: #fff;
+            }
+            100% {
+                background: red;
+            }
+        }
+        .warning {
+            animation: warning-bg .25s linear 4 reverse;
+        }
+    </style>
+</head>
+<body>
+    UPLOAD 
+    <h3></h3>
+    <code></code>
+    <hr/>
+
+    <div>
+        <!-- row -->
+    </div>
+    <button data-type="add">增加一行+</button>
+
+    <hr/>
+    <button data-type="commit">提交上传</button>
+</body>
+<script>
+!function () {
+    const form = document.querySelector("div");
+    const h3 = document.querySelector("h3");
+    let uploading = false;
+
+    document.querySelector("button[data-type=commit]").addEventListener("click", () => {
+
+        if (uploading) return;
+
+        /* 防止自动设为非multipart/form-data */
+        const fm = document.createElement("form");
+        fm.setAttribute("enctype", "multipart/form-data");
+
+        const fd = new FormData(fm);
+
+        const ps = [...form.childNodes].filter(i => i.nodeName === "P");
+        if (!ps.length) return;
+
+        uploading = true;
+
+        for (let p of ps) {
+            const [fe, ve] = [...p.childNodes].filter(i => i.nodeName === "INPUT");
+            const field = fe.value, value = ve.previousSibling.previousSibling.value === "文件类型" ? ve.files[0] : ve.value;
+            if (!field || !value) {
+                uploading = false;
+                return warning(p);
+            }
+            fd.append(field, value);
+        }
+
+        const request = new XMLHttpRequest();
+        request.upload.addEventListener("progress", e => {
+            h3.innerText = ((e.loaded / e.total * 100) | 0) + "%";
+        });
+        request.addEventListener("load", () => {
+            document.querySelector("code").innerText = "服务器返回： " + request.response;
+            uploading = false;
+        });
+        request.open("POST", "http://localhost:8612/upload", );
+        request.send(fd);
+
+    });
+
+    addRow();
+
+    document.querySelector("button[data-type=add]").addEventListener("click", addRow);
+
+    function delRow (e) {
+        form.removeChild(e.target.parentNode);
+    }
+
+    function typeChange (e) {
+        const id = e.target.dataset.id;
+        const type = e.target.value;
+        e.target.parentNode.removeChild(e.target.nextSibling.nextSibling);
+        e.target.parentNode.appendChild(value(type == "文件类型", id));
+    }
+
+    function addRow () {
+        if (uploading) return;
+        
+        const id = getId();
+
+        const p = document.createElement("p");
+        p.setAttribute("data-id", id);
+
+        const d = document.createElement("a");
+        d.setAttribute("style", "color: blue; cursor: pointer;");
+        d.setAttribute("data-id", id);
+        d.innerHTML = "删除 ";
+        d.onclick = delRow;
+
+        const label = document.createElement("label");
+        label.innerHTML = "字段名:  ";
+
+        const label1 = document.createElement("label");
+        label1.innerHTML = "字段类型:   ";
+
+        const label2 = document.createElement("label");
+        label2.innerHTML = "字段值:   ";
+
+        const input = document.createElement("input");
+        input.setAttribute("type", "text");
+        input.setAttribute("data-id", id);
+        input.setAttribute("style", "margin-right: 10px;");
+
+        const select = document.createElement("select");
+        select.setAttribute("data-id", id);
+        select.setAttribute("style", "margin-right: 10px;");
+        select.onchange = typeChange;
+
+        ["文本类型", "文件类型"].forEach(c => {
+            const op = document.createElement("option");
+            op.setAttribute("data-id", id);
+            op.innerHTML = c;
+            select.appendChild(op);
+        });
+
+        p.appendChild(d);
+        p.appendChild(label);
+        p.appendChild(input);
+        p.appendChild(label1);
+        p.appendChild(select);
+        p.appendChild(label2);
+        p.appendChild(value(false, id));
+
+        form.appendChild(p);
+    }
+
+    function value (isFile, id) {
+        const value = document.createElement("input");
+        value.setAttribute("data-id", id);
+        value.setAttribute("type", isFile ? "file" : "text");
+        return value;
+    }
+
+    function getId () {
+        return new Date().getTime();
+    }
+
+    function warning (node) {
+        node.setAttribute("class", "warning");
+        let id = setTimeout(() => {
+            node.setAttribute("class", "");
+            clearTimeout(id);
+        }, 1000);
+    }
+}();
+</script>
+</html>
