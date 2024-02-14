@@ -652,7 +652,7 @@ export default async function formDataParser (request, { dir }) {
 
 测试截图   
 
-![./imgs//upload-test-gif.gif](./imgs//upload-test-gif.gif)
+![图片看不见请科学上网](./imgs//upload-test-gif.gif)    
 
  完整版视频请点击：[https://www.bilibili.com/video/BV1Zg4y1e73z/](https://www.bilibili.com/video/BV1Zg4y1e73z/)   
 
